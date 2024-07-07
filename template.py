@@ -46,8 +46,8 @@ def print_drink_status(invited):
         print(f"{person.name}: 지금까지 {person.current_drinks}잔 마셨습니다, 치사량까지 {person.drinks_left()}잔 남았습니다.")
 
 def print_game_list():
-    print("\n게임 리스트:")
-    print("1. 게임 A")
+    print("\n오늘의 🍺 게임 리스트:")
+    print("1. 사랑의 총알")
     print("2. 게임 B")
     print("3. 게임 C")
     print("4. 게임 D")
@@ -90,7 +90,7 @@ def love_bullet_game(invited, user_name):
         
         if hands[current_player] == 0:
             loser = next(p for p in invited if p.name == current_player)
-            print(f"게임 종료! {current_player}가 패배했습니다.")
+            print(f"게임 종료! {current_player}(이)가 패배했습니다.")
             loser.drink(1)
             print(f"{loser.name}: 지금까지 {loser.current_drinks}잔 마셨습니다, 치사량까지 {loser.drinks_left()}잔 남았습니다.")
             break
