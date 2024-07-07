@@ -138,19 +138,36 @@ def initial_game(invited):
         print("해당하는 초성에 맞는 단어를 찾을 수 없습니다. 게임을 다시 시작합니다.")
         return initial_game(invited)
 
-    print(f"크롤링된 단어들: {valid_words}") 
+    print(f"크롤링된 단어들: {valid_words}")
 
     used_words = set()
     passed_players = set()
 
     while valid_words and len(passed_players) < len(invited) - 1:
-        for selected_person in invited:
-            if selected_person in passed_players:
+        print("\n현재 플레이어 목록:")
+        for i, person in enumerate(invited, 1):
+            print(f"{i}. {person.name}")
+
+        word_entered = False
+        while not word_entered:
+            try:
+                player_number = int(input("플레이어 번호를 입력하세요: ")) - 1
+                if player_number < 0 or player_number >= len(invited):
+                    print("유효한 번호를 입력해주세요.")
+                    continue
+            except ValueError:
+                print("숫자를 입력해주세요.")
                 continue
-            word = input(f"{selected_person.name} 차례! ").strip()
+
+            selected_person = invited[player_number]
+            if selected_person in passed_players:
+                print(f"{selected_person.name}(이)는 이미 통과했습니다.")
+                continue
+
+            word = input("단어를 입력하세요: ").strip()
 
             if word in used_words:
-                print(f"\n{selected_person.name}(이)가 단어 중복으로 초성 게임에서 패배했습니다!")
+                print(f"\n{selected_person.name}(이)가 중복된 단어로 초성 게임에서 패배했습니다!")
                 selected_person.drink(1)  # selected_person 탈락 시 1잔만 마심
                 return
 
@@ -158,16 +175,18 @@ def initial_game(invited):
                 valid_words.remove(word)
                 used_words.add(word)
                 passed_players.add(selected_person)
-                print(f"{selected_person.name}(이)는 통과 !")
+                print(f"{selected_person.name} 통과!")
+                word_entered = True
             else:
                 print(f"{selected_person.name}(이)는 '{word}'를 입력하지 못했습니다. 다음 기회에...")
 
             if len(passed_players) == len(invited) - 1:
                 remaining_person = set(invited) - passed_players
                 remaining_person = remaining_person.pop()  # 집합에서 요소 하나를 꺼냄
-                print(f"마지막에 남은 {remaining_person.name}(이)가 초성 게임에서 패배했습니다! ")
+                print(f"마지막에 남은 {remaining_person.name}(이)가 초성 게임에서 패배했습니다!")
                 remaining_person.drink(1)  # remaining_person 탈락 시 1잔만 마심
                 return
+
 # 초성 게임--------------------------------------------------------------------------------------------
 
 
