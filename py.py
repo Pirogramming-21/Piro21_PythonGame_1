@@ -50,7 +50,7 @@ def print_game_list():
     print("\n게임 리스트:")
     print("1. 게임 A")
     print("2. 게임 B")
-    print("3. 게임 C")
+    print("3. 369 게임")
     print("4. 게임 D")
 
 def game_a(invited): #김민수 함수 구현
@@ -76,6 +76,7 @@ def game_c(invited): # 이수용 함수 구현
         for member in invited:
             num += 1
 
+            #성공할 확률, 실패할 확률
             answerPercentage = random.randrange(0, 10, 1)
             if answerPercentage <= 1:
                 if ("3" in str(num)) or ("6" in str(num)) or ("9" in str(num)):
@@ -91,15 +92,12 @@ def game_c(invited): # 이수용 함수 구현
                     selectedMemberInfoPrinting(member)
                     break
             else:
-                if ("3" in str(num)) or ("6" in str(num)) or ("9" in str(num)):
+                if '3' in str(num) or '6' in str(num) or '9' in str(num):
                     print(member.name, " : " + "짝")
                 else:
                     print(member.name, " : ", num)
 
     #--------------------------------------------
-
-
-
 
 def game_d(invited): # 주유민 함수 구현
     selected_person = random.choice(invited)
@@ -143,10 +141,33 @@ def main():
     invited.append(user)
     game_over = False
 
+    #아직 게임 선택 안한 사람들 모임
+    chooser = list(invited)
+
     while not game_over:
         print_drink_status(invited)
         print_game_list()
-        game_choice = input("게임을 선택하세요 (1, 2, 3, 4): ")
+
+        #모두 게임 선택했지만 아직 게임이 안 끝났다면 다시 리셋
+        if len(chooser) == 0:
+            chooser = list(invited)
+
+        #선택하고 제거
+        player = random.sample(chooser, 1).pop(0)
+        chooser.remove(player)
+        print(user.name, "이/가 게임을 선택합니다.")
+
+        if player == user:                                  #선택된 사람이 user이면 입력받는다.
+            print_game_list()
+            while True:
+                game_choice = input("게임을 선택하세요 (1, 2, 3, 4): ")
+                if game_choice != '1' and game_choice != '2' and game_choice != '3' and game_choice != '4':
+                    print("잘못된 선택입니다. 다시 선택해주세요.")
+                    continue
+        else:                                               #컴퓨터가 플레이 하는 사람이 선택되면 게임 렌덤 배정
+            game_choice = str(random.randrange(1, 5))
+            print(user.name, "이/가 ", game_choice, "번 게임을 선택했습니다.")
+
         if game_choice == '1':
             game_a(invited)
         elif game_choice == '2':
@@ -155,9 +176,6 @@ def main():
             game_c(invited)
         elif game_choice == '4':
             game_d(invited)
-        else:
-            print("잘못된 선택입니다. 다시 선택해주세요.")
-            continue
 
         for person in invited:
             if person.drinks_left() <= 0:
@@ -172,3 +190,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
