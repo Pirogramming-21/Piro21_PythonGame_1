@@ -15,11 +15,10 @@ class Person:
 
 def invite_opponents():
     opponents = {
-        "은서": 5,
-        "하연": 4,
-        "연서": 3,
-        "예진": 6,
-        "헌도": 2
+        "이민수": 5,
+        "김민수": 4,
+        "유민": 3,
+        "수용": 6,
     }
     
     while True:
