@@ -99,20 +99,27 @@ def get_words(url):
     driver = webdriver.Chrome(service=service, options=options)
 
     words = []
+    page = 1
+
     try:
-        #print(f"크롤링할 URL: {url}")
-        driver.get(url)
-        time.sleep(3)
+        while True:
+            current_url = f"{url}&page={page}"
+            driver.get(current_url)
+            time.sleep(3)
 
-        rows = driver.find_elements(By.CLASS_NAME, 'origin')
-        for row in rows:
-            links = row.find_elements(By.TAG_NAME, 'a')
-            for link in links:
-                word = link.text.strip().replace(" ", "")  # 공백, 숫자 제거
-                clean_word = re.sub(r'\d+\s*$', '', word)
-                words.append(clean_word)
+            rows = driver.find_elements(By.CLASS_NAME, 'origin')
+            if not rows:  # 더 이상 단어가 없으면 루프를 종료합니다.
+                break
 
-        #print(f"추출된 단어: {words}")
+            for row in rows:
+                links = row.find_elements(By.TAG_NAME, 'a')
+                for link in links:
+                    word = link.text.strip().replace(" ", "")  # 공백, 숫자 제거
+                    clean_word = re.sub(r'\d+\s*$', '', word)
+                    words.append(clean_word)
+
+            page += 1  # 다음 페이지로 이동
+
     except Exception as e:
         print(f"오류 발생: {e}")
     finally:
@@ -126,13 +133,12 @@ def generate_initials():
     return random.choice(consonants) + random.choice(consonants)
 
 
-
 def initial_game(invited):
     initials = generate_initials()
     print(f"초성은 '{initials}'")
     print("-------------------Are You Ready ?------------------------")
 
-    url = f"https://ko.dict.naver.com/#/search?range=word&query={initials}&autoConvert=&shouldSearchOpen=false&autoConvert="
+    url = f"https://ko.dict.naver.com/#/search?range=entry&query={initials}&shouldSearchOpen=false&autoConvert="
     valid_words = get_words(url)
     if not valid_words:
         print("해당하는 초성에 맞는 단어를 찾을 수 없습니다. 게임을 다시 시작합니다.")
@@ -186,7 +192,6 @@ def initial_game(invited):
                 print(f"마지막에 남은 {remaining_person.name}(이)가 초성 게임에서 패배했습니다!")
                 remaining_person.drink(1)  # remaining_person 탈락 시 1잔만 마심
                 return
-
 # 초성 게임--------------------------------------------------------------------------------------------
 
 
