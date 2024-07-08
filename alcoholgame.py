@@ -59,10 +59,10 @@ def print_game_list():
     print("4. 초성 게임")
 
 def love_bullet_game(invited, user_name):
-    print("\n사랑의 총알 게임을 시작합니다!")
+    print("사랑의~ (빵) 총알을~ (빵) 누구에게 쏠까요~ 빵빵!")
     hands = {player.name: 2 for player in invited}  # 각 플레이어는 2개의 손으로 시작
     host = random.choice([p.name for p in invited])
-    print(f"{host}가 게임의 주최자로 선정되었습니다.")
+    print(f"{host}가 게임의 주최자로 선정되었습니다.") # 주최자는 랜덤으로 설정
     
     # 각 플레이어가 지목할 사람 선택
     targets = {}
@@ -134,6 +134,7 @@ def like_game(players, user_name):
     rejected_counts = {player.name: 0 for player in players}
     host = random.choice(players)
     user = next(player for player in players if player.name == user_name)
+    print("아 술도 마셨는데~ 좋아 게임할까~ 좋아, 좋아, 좋아좋아좋아!!")
     print(f"\n주최자는 {host.name}입니다!\n")
     time.sleep(1)
 
@@ -224,34 +225,32 @@ def like_game(players, user_name):
     return host
 
 def samyukgu(invited):
-
     print("369~ 369! 369~ 369!!")
-    flag = True
     num = 0
-    while flag:
+    while True:  # 무한 루프로 변경
         for member in invited:
             num += 1
-
-            #성공할 확률, 실패할 확률
             answerPercentage = random.randrange(0, 10, 1)
-            if answerPercentage <= 1:
-                if ("3" in str(num)) or ("6" in str(num)) or ("9" in str(num)):
+            
+            # 3, 6, 9가 들어간 숫자인 경우
+            if ("3" in str(num)) or ("6" in str(num)) or ("9" in str(num)):
+                if answerPercentage <= 1:  # 실패 확률
                     print(member.name, " : ", num)
-                    flag = False
                     print("틀렸습니다!!")
                     selectedMemberInfoPrinting(member)
-                    break
+                    return member  # 패배한 플레이어 즉시 반환
                 else:
                     print(member.name, " : " + "짝")
-                    flag = False
+            else:  # 3, 6, 9가 들어가지 않은 숫자인 경우
+                if answerPercentage <= 1:  # 실패 확률
+                    print(member.name, " : " + "짝")
                     print("틀렸습니다!!")
                     selectedMemberInfoPrinting(member)
-                    break
-            else:
-                if '3' in str(num) or '6' in str(num) or '9' in str(num):
-                    print(member.name, " : " + "짝")
+                    return member  # 패배한 플레이어 즉시 반환
                 else:
                     print(member.name, " : ", num)
+    
+    # 더 이상 break 문이 필요 없음
 
 def selectedMemberInfoPrinting(member):
     print(f"\n{member.name}(이)가 게임 C에서 패배했습니다!")
@@ -271,20 +270,27 @@ def get_words(url):
     driver = webdriver.Chrome(service=service, options=options)
 
     words = []
+    page = 1
+
     try:
-        #print(f"크롤링할 URL: {url}")
-        driver.get(url)
-        time.sleep(3)
+        while True:
+            current_url = f"{url}&page={page}"
+            driver.get(current_url)
+            time.sleep(3)
 
-        rows = driver.find_elements(By.CLASS_NAME, 'origin')
-        for row in rows:
-            links = row.find_elements(By.TAG_NAME, 'a')
-            for link in links:
-                word = link.text.strip().replace(" ", "")  # 공백, 숫자 제거
-                clean_word = re.sub(r'\d+\s*$', '', word)
-                words.append(clean_word)
+            rows = driver.find_elements(By.CLASS_NAME, 'origin')
+            if not rows:  # 더 이상 단어가 없으면 루프를 종료합니다.
+                break
 
-        #print(f"추출된 단어: {words}")
+            for row in rows:
+                links = row.find_elements(By.TAG_NAME, 'a')
+                for link in links:
+                    word = link.text.strip().replace(" ", "")  # 공백, 숫자 제거
+                    clean_word = re.sub(r'\d+\s*$', '', word)
+                    words.append(clean_word)
+
+            page += 1  # 다음 페이지로 이동
+
     except Exception as e:
         print(f"오류 발생: {e}")
     finally:
@@ -298,31 +304,47 @@ def generate_initials():
     return random.choice(consonants) + random.choice(consonants)
 
 
-
 def initial_game(invited):
     initials = generate_initials()
     print(f"초성은 '{initials}'")
     print("-------------------Are You Ready ?------------------------")
 
-    url = f"https://ko.dict.naver.com/#/search?range=word&query={initials}&autoConvert=&shouldSearchOpen=false&autoConvert="
+    url = f"https://ko.dict.naver.com/#/search?range=entry&query={initials}&shouldSearchOpen=false&autoConvert="
     valid_words = get_words(url)
     if not valid_words:
         print("해당하는 초성에 맞는 단어를 찾을 수 없습니다. 게임을 다시 시작합니다.")
         return initial_game(invited)
 
-    print(f"크롤링된 단어들: {valid_words}") 
+    print(f"크롤링된 단어들: {valid_words}")
 
     used_words = set()
     passed_players = set()
 
     while valid_words and len(passed_players) < len(invited) - 1:
-        for selected_person in invited:
-            if selected_person in passed_players:
+        print("\n현재 플레이어 목록:")
+        for i, person in enumerate(invited, 1):
+            print(f"{i}. {person.name}")
+
+        word_entered = False
+        while not word_entered:
+            try:
+                player_number = int(input("플레이어 번호를 입력하세요: ")) - 1
+                if player_number < 0 or player_number >= len(invited):
+                    print("유효한 번호를 입력해주세요.")
+                    continue
+            except ValueError:
+                print("숫자를 입력해주세요.")
                 continue
-            word = input(f"{selected_person.name} 차례! ").strip()
+
+            selected_person = invited[player_number]
+            if selected_person in passed_players:
+                print(f"{selected_person.name}(이)는 이미 통과했습니다.")
+                continue
+
+            word = input("단어를 입력하세요: ").strip()
 
             if word in used_words:
-                print(f"\n{selected_person.name}(이)가 단어 중복으로 초성 게임에서 패배했습니다!")
+                print(f"\n{selected_person.name}(이)가 중복된 단어로 초성 게임에서 패배했습니다!")
                 selected_person.drink(1)  # selected_person 탈락 시 1잔만 마심
                 return
 
@@ -330,14 +352,15 @@ def initial_game(invited):
                 valid_words.remove(word)
                 used_words.add(word)
                 passed_players.add(selected_person)
-                print(f"{selected_person.name}(이)는 통과 !")
+                print(f"{selected_person.name} 통과!")
+                word_entered = True
             else:
                 print(f"{selected_person.name}(이)는 '{word}'를 입력하지 못했습니다. 다음 기회에...")
 
             if len(passed_players) == len(invited) - 1:
                 remaining_person = set(invited) - passed_players
                 remaining_person = remaining_person.pop()  # 집합에서 요소 하나를 꺼냄
-                print(f"마지막에 남은 {remaining_person.name}(이)가 초성 게임에서 패배했습니다! ")
+                print(f"마지막에 남은 {remaining_person.name}(이)가 초성 게임에서 패배했습니다!")
                 remaining_person.drink(1)  # remaining_person 탈락 시 1잔만 마심
                 return
 
@@ -370,19 +393,30 @@ def main():
     print_invited(invited)
     invited.append(user)
     game_over = False
+    last_drinker = None
 
     while not game_over:
         print_drink_status(invited)
         print_game_list()
-        game_choice = input("게임을 선택하세요 (1, 2, 3, 4): ")
+        
+        if last_drinker is None or last_drinker == user:
+            game_choice = input("게임을 선택하세요 (1, 2, 3, 4): ")
+        else:
+            game_choice = str(random.randint(1, 4))
+            print(f"{last_drinker.name}이(가) 게임 {game_choice}를 선택했습니다.")
+            time.sleep(3)
+        
         if game_choice == '1':
             love_bullet_game(invited, user.name)
+            last_drinker = next(person for person in invited if person.current_drinks > 0)
         elif game_choice == '2':
-            like_game(invited, user.name)
+            last_drinker = like_game(invited, user.name)
         elif game_choice == '3':
             samyukgu(invited)
+            last_drinker = samyukgu(invited)
         elif game_choice == '4':
             initial_game(invited)
+            last_drinker = next(person for person in invited if person.current_drinks > 0)
         else:
             print("잘못된 선택입니다. 다시 선택해주세요.")
             continue
