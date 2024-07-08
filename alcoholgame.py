@@ -127,56 +127,101 @@ def love_bullet_game(invited, user_name):
         
         time.sleep(1.5)  # 게임 진행 속도 조절
 
-def like_game(players):
+import time
+import random
+
+def like_game(players, user_name):
     rejected_counts = {player.name: 0 for player in players}
-    host = random.choice(players)               # 일단 이건 랜덤으로
+    host = random.choice(players)
+    user = next(player for player in players if player.name == user_name)
     print(f"\n주최자는 {host.name}입니다!\n")
-    print("\n현재 사람들 중 한명을 지목하여 '○○ 좋아!'를 입력해주세요 (본인 제외)! 🚨")
+    time.sleep(1)
 
     while True:
         available_players = [player for player in players if player.name != host.name]
-        target = random.choice(available_players)
-        print(f"{host.name}: {target.name} 좋아!")
         
-        responses = ["나도 좋아", "얼만큼?", "나는 싫어", "칵, 퉤"]
+        if host == user:
+            while True:
+                target_input = input(f"{host.name}: 누구를 지목하시겠습니까? (예: '유민 좋아') ").strip()
+                if " 좋아" in target_input:
+                    target_name = target_input.replace(" 좋아", "").strip()
+                    target = next((player for player in available_players if player.name == target_name), None)
+                    if target:
+                        print(f"{host.name}: {target.name} 좋아!")
+                        time.sleep(1)
+                        break
+                print("유효하지 않은 입력입니다. 다시 시도해주세요.")
+                time.sleep(1)
+        else:
+            target = random.choice(available_players)
+            print(f"{host.name}: {target.name} 좋아!")
+            time.sleep(1)
         
-        response = random.choice(responses) # 이것도 랜덤으로
+        if target == user:
+            print("\n선택 가능한 반응:")
+            print("1. 나도 좋아 (바로 좋아 좋아~)")
+            print("2. 얼만큼? (상대방이 최대 3번까지 '이만큼~'을 외칩니다)")
+            print("3. 나는 싫어 (모두가 '그럼 누구?'를 외칩니다)")
+            print("4. 칵, 퉤 (거절합니다)")
+            response = input(f"{target.name}, 반응을 선택하세요 (1-4): ").strip()
+            responses = ["나도 좋아", "얼만큼?", "나는 싫어", "칵, 퉤"]
+            response = responses[int(response)-1] if response.isdigit() and 1 <= int(response) <= 4 else "잘못된 입력"
+        else:
+            response = random.choice(["나도 좋아", "얼만큼?", "나는 싫어", "칵, 퉤"])
         print(f"{target.name}: {response}")
+        time.sleep(1)
         
         if response == "나도 좋아":
-            print("좋아 좋아!")
+            print("모두: 좋아 좋아~")
+            time.sleep(1)
             host = target
-            continue
+            rejected_counts[host.name] = 0  # 카운트 초기화
         elif response == "얼만큼?":
             for i in range(3):
-                print(f"{host.name}가 주접을 부립니다. '아주 많이 좋아해!'")
-                if random.choice([True, False]):
-                    print(f"{target.name}: 좋아 좋아!")
-                    host = target
-                    break
+                print(f"{host.name}: 이만큼~")
+                time.sleep(1)
+                if target == user:
+                    print("\n선택 가능한 반응:")
+                    print("1. 나도 좋아 (게임 계속)")
+                    print("2. 부족해~ (다음 '이만큼~'으로)")
+                    target_response = input(f"{target.name}, 반응을 선택하세요 (1-2): ").strip()
+                    target_response = "나도 좋아" if target_response == "1" else "부족해~"
                 else:
-                    print(f"{target.name}: 쫌만 더~")
-
-            else:
+                    target_response = random.choice(["나도 좋아", "부족해~"])
+                print(f"{target.name}: {target_response}")
+                time.sleep(1)
+                
+                if target_response == "나도 좋아":
+                    print("모두: 좋아 좋아~")
+                    time.sleep(1)
+                    host = target
+                    rejected_counts[host.name] = 0  # 카운트 초기화
+                    break
+            else:  # 3번 모두 실패한 경우
                 print(f"누가누가 술을 마셔 ~ {host.name}이(가) 술을 마셔~~!!")
+                time.sleep(1)
                 host.drink(1)
                 return host
-            continue
-                    
         elif response == "나는 싫어":
-            print("모두가 그럼 누구?를 외친다!")
-            continue
-            
+            print("모두: 그럼 누구?")
+            time.sleep(1)
+            rejected_counts[host.name] += 1
         elif response == "칵, 퉤":
             rejected_counts[host.name] += 1
-            if rejected_counts[host.name] >= 3:
-                print(f"누가누가 술을 마셔 ~ {host.name}이(가) 술을 마셔~~!!")
-                host.drink(1)
-                return host
-            continue
-    
-    return host
+        else:
+            print("잘못된 입력입니다. 다음 차례로 넘어갑니다.")
+            time.sleep(1)
+        
+        if rejected_counts[host.name] >= 3:
+            print(f"누가누가 술을 마셔 ~ {host.name}이(가) 술을 마셔~~!!")
+            time.sleep(1)
+            host.drink(1)
+            return host
+        
+        print(f"\n다음 주최자는 {host.name}입니다.\n")
+        time.sleep(1)
 
+    return host
 
 def samyukgu(invited):
 
@@ -333,7 +378,7 @@ def main():
         if game_choice == '1':
             love_bullet_game(invited, user.name)
         elif game_choice == '2':
-            like_game(invited)
+            like_game(invited, user.name)
         elif game_choice == '3':
             samyukgu(invited)
         elif game_choice == '4':
